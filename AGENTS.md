@@ -16,10 +16,34 @@
 | Testing | pytest + httpx | 8.x | Async tests |
 | Container | Docker + Compose | Latest | Containerization |
 | Code Quality | ruff + mypy | Latest | Linting, type checking |
+| Email | Console (dev) / Resend (prod) | - | Email notifications |
 
 ---
 
-## 2. Project Structure
+## 2. Project Goals (Portfolio Focus)
+
+Этот проект демонстрирует навыки работы с:
+- **Redis**: кеширование популярных товаров, rate limiting, blacklist токенов, real-time аналитика
+- **Kafka**: event-driven архитектура, producer/consumer паттерны, обработка событий заказов
+- **FastAPI**: async/await, Pydantic v2, dependency injection, OpenAPI
+- **PostgreSQL**: async SQLAlchemy, миграции, оптимизация запросов
+
+---
+
+## 3. Development Workflow
+
+### Правило выполнения этапов:
+
+1. **Делаешь этап четко по заданию** - реализуешь только то, что описано в текущей фазе
+2. **Проверяешь работоспособность** - запускаешь приложение, проверяешь что ничего не сломалось
+3. **Адаптируешь, фиксешь баги** - если что-то не работает, исправляешь и проверяешь снова
+4. **Создаешь коммиты** - коммитишь измененные файлы с понятным сообщением
+
+После каждого этапа: **спросить разрешения идти дальше**
+
+---
+
+## 4. Project Structure
 
 ```
 online-shop/
@@ -48,6 +72,7 @@ online-shop/
 │   │   ├── security.py         # JWT, password hashing
 │   │   ├── cache.py          # Redis caching utilities
 │   │   ├── kafka.py          # Kafka producer/consumer
+│   │   ├── rate_limiter.py   # Rate limiting
 │   │   └── exceptions.py     # Custom exceptions
 │   │
 │   ├── models/                 # SQLAlchemy models
@@ -88,7 +113,7 @@ online-shop/
 │
 ├── tests/                     # Test suite
 │   ├── __init__.py
-│   ���── conftest.py
+│   ├── conftest.py
 │   ├── api/
 │   │   ├── __init__.py
 │   │   ├── test_auth.py
@@ -104,14 +129,9 @@ online-shop/
 │   └── versions/
 │
 ├── docker/                   # Docker files
-│   ├── Dockerfile
-│   └── nginx.conf
-│
-├── scripts/                  # Utility scripts
-│   └── init_db.py
+│   └── Dockerfile
 │
 ├── .env.example
-├── .env.docker
 ├── docker-compose.yaml
 ├── pyproject.toml
 ├── ruff.toml
@@ -122,9 +142,9 @@ online-shop/
 
 ---
 
-## 3. Database Schema
+## 6. Database Schema
 
-### 3.1. Users Table
+### 4.1. Users Table
 
 ```sql
 CREATE TABLE users (
@@ -145,7 +165,7 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_username ON users(username);
 ```
 
-### 3.2. Categories Table
+### 4.2. Categories Table
 
 ```sql
 CREATE TABLE categories (
@@ -163,7 +183,7 @@ CREATE INDEX idx_categories_slug ON categories(slug);
 CREATE INDEX idx_categories_parent ON categories(parent_id);
 ```
 
-### 3.3. Products Table
+### 4.3. Products Table
 
 ```sql
 CREATE TABLE products (
@@ -187,7 +207,7 @@ CREATE INDEX idx_products_category ON products(category_id);
 CREATE INDEX idx_products_price ON products(price);
 ```
 
-### 3.4. Carts Table
+### 4.4. Carts Table
 
 ```sql
 CREATE TABLE carts (
@@ -210,7 +230,7 @@ CREATE TABLE cart_items (
 );
 ```
 
-### 3.5. Orders Table
+### 4.5. Orders Table
 
 ```sql
 CREATE TABLE orders (
@@ -243,7 +263,7 @@ CREATE TABLE order_items (
 );
 ```
 
-### 3.6. Addresses Table
+### 4.6. Addresses Table
 
 ```sql
 CREATE TABLE addresses (
@@ -265,9 +285,9 @@ CREATE TABLE addresses (
 
 ---
 
-## 4. API Endpoints
+## 7. API Endpoints
 
-### 4.1. Authentication (`/api/v1/auth`)
+### 5.1. Authentication (`/api/v1/auth`)
 
 | Method | Endpoint | Description | Auth | Status |
 |--------|----------|-----------|------|--------|
@@ -277,7 +297,7 @@ CREATE TABLE addresses (
 | POST | `/refresh` | Refresh access token | Yes | 200 |
 | GET | `/me` | Get current user | Yes | 200 |
 
-### 4.2. Users (`/api/v1/users`)
+### 5.2. Users (`/api/v1/users`)
 
 | Method | Endpoint | Description | Auth | Status |
 |--------|----------|-----------|------|--------|
@@ -286,7 +306,7 @@ CREATE TABLE addresses (
 | PATCH | `/{id}` | Update user | Yes | 200 |
 | DELETE | `/{id}` | Delete user | Admin | 204 |
 
-### 4.3. Categories (`/api/v1/categories`)
+### 5.3. Categories (`/api/v1/categories`)
 
 | Method | Endpoint | Description | Auth | Status |
 |--------|----------|-----------|------|--------|
@@ -296,18 +316,18 @@ CREATE TABLE addresses (
 | PATCH | `/{slug}` | Update category | Admin | 200 |
 | DELETE | `/{slug}` | Delete category | Admin | 204 |
 
-### 4.4. Products (`/api/v1/products`)
+### 5.4. Products (`/api/v1/products`)
 
 | Method | Endpoint | Description | Auth | Status |
 |--------|----------|-----------|------|--------|
 | GET | `/` | List products | No | 200 |
 | GET | `/{slug}` | Get product | No | 200 |
-| GET | `/{slug}/related` | Related products | No | 200 |
+| GET | `/trending` | Get trending products | No | 200 |
 | POST | `/` | Create product | Admin | 201 |
 | PATCH | `/{slug}` | Update product | Admin | 200 |
 | DELETE | `/{slug}` | Delete product | Admin | 204 |
 
-### 4.5. Cart (`/api/v1/cart`)
+### 5.5. Cart (`/api/v1/cart`)
 
 | Method | Endpoint | Description | Auth | Status |
 |--------|----------|-----------|------|--------|
@@ -317,7 +337,7 @@ CREATE TABLE addresses (
 | DELETE | `/items/{id}` | Remove item | Yes | 204 |
 | DELETE | `/` | Clear cart | Yes | 204 |
 
-### 4.6. Orders (`/api/v1/orders`)
+### 5.6. Orders (`/api/v1/orders`)
 
 | Method | Endpoint | Description | Auth | Status |
 |--------|----------|-----------|------|--------|
@@ -325,9 +345,9 @@ CREATE TABLE addresses (
 | GET | `/{order_number}` | Get order | Yes | 200 |
 | POST | `/` | Create order | Yes | 201 |
 | PATCH | `/{order_number}/cancel` | Cancel order | Yes | 200 |
-| POST | `/{order_number}/pay` | Process payment | Yes | 200 |
+| POST | `/{order_number}/pay` | Process payment (mock) | Yes | 200 |
 
-### 4.7. Addresses (`/api/v1/addresses`)
+### 5.7. Addresses (`/api/v1/addresses`)
 
 | Method | Endpoint | Description | Auth | Status |
 |--------|----------|-----------|------|--------|
@@ -338,99 +358,138 @@ CREATE TABLE addresses (
 
 ---
 
-## 5. Implementation Plan
+## 8. Implementation Plan
 
-### Phase 1: Foundation (Week 1)
+### Phase 1: Foundation
+- [ ] Создать структуру проекта и конфигурационные файлы
+- [ ] Настроить Docker Compose (PostgreSQL, Redis, Kafka, Kafka UI)
+- [ ] Настроить Alembic и создать initial миграцию
+- [ ] Подключить async SQLAlchemy
+- [ ] Настроить Redis client (async)
+- [ ] Настроить Kafka producer
+- [ ] Настроить логирование и error handling
 
-- [ ] Initialize project with FastAPI structure
-- [ ] Configure Docker Compose with PostgreSQL, Redis, Kafka
-- [ ] Set up Alembic migrations
-- [ ] Implement database connection and base models
-- [ ] Configure logging and error handling
+### Phase 2: Auth & Users
+- [ ] Модель User + Pydantic схемы
+- [ ] Регистрация пользователя
+- [ ] Логин (jwt access + refresh токены)
+- [ ] Logout (blacklist токена в Redis)
+- [ ] Refresh токена
+- [ ] GET /me - текущий пользователь
+- [ ] CRUD пользователей (admin only)
 
-### Phase 2: Core Entities (Week 2)
+### Phase 3: Products & Categories
+- [ ] Модели Category, Product
+- [ ] CRUD категорий
+- [ ] CRUD товаров
+- [ ] Пагинация и фильтрация товаров
+- [ ] [Redis] Кеширование популярных товаров
+- [ ] [Redis] Инвалидация кеша при обновлении
 
-- [ ] Implement User model and authentication
-- [ ] Implement Category model and CRUD
-- [ ] Implement Product model and CRUD
-- [ ] Add Pydantic schemas for all entities
-- [ ] Write basic unit tests for models
+### Phase 4: Cart & Orders
+- [ ] Модели Cart, CartItem
+- [ ] Добавление/удаление товаров из корзины
+- [ ] Модели Order, OrderItem
+- [ ] Создание заказа из корзины
+- [ ] Статусная машина заказа (pending → paid → shipped → delivered)
+- [ ] [Mock] Оплата заказа
 
-### Phase 3: Business Logic (Week 3)
+### Phase 5: Redis Features
+- [ ] [Redis] Rate limiting (на основе IP + user)
+- [ ] [Redis] Trending products (сортировка по просмотрам)
+- [ ] [Redis] Кеширование категорий
+- [ ] [Redis] Счетчики просмотров товаров
 
-- [ ] Implement Cart service with Redis storage
-- [ ] Implement Order service with status machine
-- [ ] Add address management
-- [ ] Implement JWT refresh token rotation
-- [ ] Add RBAC (role-based access control)
+### Phase 6: Kafka & Events
+- [ ] [Kafka] Producer - отправка событий при создании заказа
+- [ ] [Kafka] Producer - события регистрации пользователя
+- [ ] [Kafka] Consumer worker - обработка событий
+- [ ] [Redis] Real-time аналитика (trending products)
+- [ ] [Worker] Notification service (логирование уведомлений)
+- [ ] [Worker] Аналитика - обновление trending в Redis
 
-### Phase 4: Caching & Performance (Week 4)
+### Phase 7: Addresses
+- [ ] CRUD адресов пользователя
+- [ ] Выбор адреса при оформлении заказа
 
-- [ ] Implement Redis caching layer for products
-- [ ] Add cache invalidation strategies
-- [ ] Implement query optimization with indexes
-- [ ] Add rate limiting
-- [ ] Performance testing and profiling
-
-### Phase 5: Event-Driven Architecture (Week 5)
-
-- [ ] Set up Kafka producer for events
-- [ ] Implement Kafka consumer worker
-- [ ] Add notification service
-- [ ] Implement real-time analytics with Redis
-- [ ] Add event retry logic and dead letter queue
-
-### Phase 6: Testing & Optimization (Week 6)
-
-- [ ] Write integration tests
-- [ ] Write E2E tests with Playwright
-- [ ] Security audit and fixes
-- [ ] Load testing with k6
-- [ ] Documentation and OpenAPI specs
-
----
-
-## 6. Kafka Topics
-
-| Topic | Event Type | Description |
-|-------|-----------|-------------|
-| `user.registered` | UserCreated | New user registration |
-| `user.updated` | UserUpdated | User profile update |
-| `product.created` | ProductCreated | New product added |
-| `product.updated` | ProductUpdated | Product updated |
-| `product.out_of_stock` | ProductOutOfStock | Product stock depleted |
-| `order.created` | OrderCreated | New order placed |
-| `order.paid` | OrderPaid | Payment confirmed |
-| `order.shipped` | OrderShipped | Order shipped |
-| `order.cancelled` | OrderCancelled | Order cancelled |
+### Phase 8: Testing
+- [ ] Unit тесты для key services
+- [ ] Интеграционные тесты для API endpoints
 
 ---
 
-## 7. Redis Keys Schema
+## 9. Redis Usage (Key Feature)
 
-| Key Pattern | Type | TTL | Description |
-|------------|-----|-----|-------|
-| `product:{id}:v1` | JSON | 300s | Product details |
-| `products:list:{filter_hash}:v1` | JSON | 60s | Product list cache |
-| `category:{id}:v1` | JSON | 600s | Category details |
-| `trending:products:v1` | JSON | 300s | Popular products |
-| `cart:{user_id}:v1` | JSON | 7d | User cart |
-| `blacklist:{token_id}` | string | token_ttl | JWT blacklist |
-| `rate_limit:{identifier}` | int | 60s | Rate limit counter |
+### 7.1. Caching Strategy
+
+```
+Кеширование ТОЛЬКО для популярных товаров:
+- key: "trending:products:v1"
+- TTL: 300 seconds (5 min)
+- Обновляется через Kafka consumer
+```
+
+```
+Кеширование категорий:
+- key: "category:{slug}:v1"  
+- TTL: 600 seconds (10 min)
+- Инвалидация при update/delete
+```
+
+### 7.2. Rate Limiting
+
+```
+key: "rate_limit:{ip}:{user_id}"
+- Проверка на каждый запрос
+- Лимит: 60 запросов в минуту
+- TTL: 60 seconds
+```
+
+### 7.3. Token Blacklist
+
+```
+key: "blacklist:{token_id}"
+- При logout токен добавляется в blacklist
+- TTL: until token expiration
+- Проверка при каждом запросе
+```
+
+### 7.4. Real-time Analytics
+
+```
+key: "analytics:product_views:{product_id}"
+- Инкремент при каждом просмотре товара
+
+key: "trending:products:v1"
+- Топ-N товаров по просмотрам
+- Обновляется фоновым worker-ом
+```
 
 ---
 
-## 8. Environment Variables
+## 10. Kafka Topics
+
+| Topic | Producer | Consumer | Description |
+|-------|----------|----------|-------------|
+| `user.registered` | auth | notifications | New user registration |
+| `order.created` | orders | notifications, analytics | New order placed |
+| `order.paid` | orders | notifications | Payment confirmed |
+| `order.cancelled` | orders | notifications | Order cancelled |
+| `product.viewed` | products | analytics | Product view event |
+
+---
+
+## 11. Environment Variables
 
 ```bash
 # Application
 APP_NAME=online-shop
 APP_VERSION=1.0.0
-DEBUG=false
+DEBUG=true
 SECRET_KEY=<generate-random-key>
 
 # Database
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/online_shop
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/online_shop
 DATABASE_POOL_SIZE=20
 
 # Redis
@@ -447,11 +506,14 @@ REFRESH_TOKEN_EXPIRE_DAYS=7
 
 # Rate Limiting
 RATE_LIMIT_PER_MINUTE=60
+
+# Email (dev = console, prod = resend)
+EMAIL_MODE=console
 ```
 
 ---
 
-## 9. Docker Compose Services
+## 12. Docker Compose Services
 
 ```yaml
 version: '3.8'
@@ -503,13 +565,8 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    ports:
-      - "8081:8081"
-    environment:
-      REDIS_HOSTS: local:redis:6379
+    depends_on:
+      - kafka
 
 volumes:
   postgres_data:
@@ -518,34 +575,51 @@ volumes:
 
 ---
 
-## 10. Acceptance Criteria
+## 13. Acceptance Criteria
 
 ### Functional Requirements
 
 - [ ] Users can register, login, logout
 - [ ] Users can browse products and categories
 - [ ] Users can add products to cart
-- [ ] Users can place orders
+- [ ] Users can place orders with mock payment
 - [ ] Users can view order history
 - [ ] Admins can manage products and categories
 - [ ] JWT tokens refresh automatically
 
-### Non-Functional Requirements
+### Redis Requirements (Portfolio Focus)
 
-- [ ] API response time < 200ms for cached requests
-- [ ] Support 1000+ concurrent users
-- [ ] 99.9% uptime
-- [ ] All endpoints have tests
-- [ ] OpenAPI documentation at `/docs`
+- [ ] Popular products cached in Redis
+- [ ] Rate limiting works correctly
+- [ ] Token blacklist prevents reuse
+- [ ] Trending products updated in real-time
 
-### Caching Requirements
-
-- [ ] Products cached in Redis with 5-minute TTL
-- [ ] Cache invalidation on product update
-- [ ] Rate limiting per user/IP
-
-### Event-Driven Requirements
+### Kafka Requirements (Portfolio Focus)
 
 - [ ] Order events published to Kafka
-- [ ] Background workers process events
-- [ ] Notifications sent async
+- [ ] Consumer processes order.created events
+- [ ] Notifications logged asynchronously
+- [ ] Analytics updated via Kafka consumer
+
+### Non-Functional Requirements
+
+- [ ] OpenAPI documentation at `/docs`
+- [ ] All endpoints have unit tests
+- [ ] Clean code with proper type hints
+
+---
+
+## 14. Payment Implementation
+
+**Mock Payment Mode** (для портфолио):
+- При вызове `/orders/{order_number}/pay` всегда возвращается success
+- Статус заказа меняется на `paid`
+- В реальном проекте можно легко заменить на Stripe/Resad
+
+```python
+# Пример реализации mock платежа
+async def process_payment(order_id: UUID) -> bool:
+    # Имитация проверки платежа
+    await asyncio.sleep(0.5)  # simulate API call
+    return True  # всегда успешно
+```
