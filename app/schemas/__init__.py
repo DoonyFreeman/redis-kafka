@@ -12,6 +12,24 @@ from app.schemas.auth import (
     RegisterRequest,
     RefreshRequest,
 )
+from app.schemas.category import (
+    CategoryBase,
+    CategoryCreate,
+    CategoryUpdate,
+    CategoryResponse,
+    CategoryWithChildrenResponse,
+    CategoryWithProductsResponse,
+)
+from app.schemas.product import (
+    ProductBase,
+    ProductCreate,
+    ProductUpdate,
+    ProductResponse,
+    ProductInListResponse,
+    PaginatedProductsResponse,
+    ProductDetailResponse,
+    TrendingProductResponse,
+)
 
 __all__ = [
     "UserBase",
@@ -24,4 +42,18 @@ __all__ = [
     "LoginRequest",
     "RegisterRequest",
     "RefreshRequest",
+    "CategoryBase",
+    "CategoryCreate",
+    "CategoryUpdate",
+    "CategoryResponse",
+    "CategoryWithChildrenResponse",
+    "CategoryWithProductsResponse",
+    "ProductBase",
+    "ProductCreate",
+    "ProductUpdate",
+    "ProductResponse",
+    "ProductInListResponse",
+    "PaginatedProductsResponse",
+    "ProductDetailResponse",
+    "TrendingProductResponse",
 ]
