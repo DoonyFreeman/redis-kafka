@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     SECRET_KEY: str = "dev-secret-key"
 
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/online_shop"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5433/online_shop"
     DATABASE_POOL_SIZE: int = 20
 
     REDIS_URL: str = "redis://localhost:6379/0"
