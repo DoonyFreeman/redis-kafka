@@ -11,6 +11,7 @@ from app.config import get_settings
 from app.core.exceptions import AppError
 from app.core.kafka import kafka_producer
 from app.core.redis import redis_client
+from app.middleware.rate_limiter import RateLimitMiddleware
 
 settings = get_settings()
 
@@ -40,6 +41,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(RateLimitMiddleware)
 
 app.include_router(api_router)
 

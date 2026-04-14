@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.product import Product
 from app.schemas.product import ProductCreate
 from app.schemas.product import ProductUpdate
+from app.services import cache_service
 
 
 async def get_products(
@@ -111,6 +112,9 @@ async def create_product(
     db.add(product)
     await db.commit()
     await db.refresh(product)
+
+    await cache_service.invalidate_trending_cache()
+
     return product
 
 
@@ -129,6 +133,9 @@ async def update_product(
         setattr(product, field, value)
     await db.commit()
     await db.refresh(product)
+
+    await cache_service.invalidate_trending_cache()
+
     return product
 
 
@@ -138,6 +145,8 @@ async def delete_product(
 ) -> None:
     await db.delete(product)
     await db.commit()
+
+    await cache_service.invalidate_trending_cache()
 
 
 async def get_products_by_category(

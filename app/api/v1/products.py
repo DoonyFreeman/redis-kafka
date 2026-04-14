@@ -8,6 +8,7 @@ from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import require_admin
+from app.core.kafka import kafka_producer
 from app.database import get_db
 from app.schemas.product import PaginatedProductsResponse
 from app.schemas.product import ProductCreate
@@ -15,6 +16,7 @@ from app.schemas.product import ProductInListResponse
 from app.schemas.product import ProductResponse
 from app.schemas.product import ProductUpdate
 from app.schemas.product import TrendingProductResponse
+from app.services import cache_service
 from app.services import product_service
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -69,19 +71,52 @@ async def get_trending_products(
     db: DbDep,
     limit: int = Query(10, ge=1, le=50),
 ) -> list[TrendingProductResponse]:
+    cached = await cache_service.get_cached_trending_products()
+    if cached:
+        result = []
+        for p in cached:
+            view_count = await cache_service.get_product_view_count(p["id"])
+            result.append(
+                TrendingProductResponse(
+                    product_id=uuid.UUID(p["id"]),
+                    slug=p["slug"],
+                    name=p["name"],
+                    price=p["price"],
+                    view_count=view_count,
+                    image_url=p.get("image_url"),
+                )
+            )
+        return result
+
     products = await product_service.get_trending_products(db, limit=limit)
 
-    return [
-        TrendingProductResponse(
-            product_id=p.id,
-            slug=p.slug,
-            name=p.name,
-            price=float(p.price),
-            view_count=0,
-            image_url=p.image_url,
+    await cache_service.cache_trending_products(
+        [
+            {
+                "id": str(product.id),
+                "name": product.name,
+                "slug": product.slug,
+                "price": float(product.price),
+                "image_url": product.image_url,
+            }
+            for product in products
+        ]
+    )
+
+    result = []
+    for product in products:
+        view_count = await cache_service.get_product_view_count(str(product.id))
+        result.append(
+            TrendingProductResponse(
+                product_id=product.id,
+                slug=product.slug,
+                name=product.name,
+                price=float(product.price),
+                view_count=view_count,
+                image_url=product.image_url,
+            )
         )
-        for p in products
-    ]
+    return result
 
 
 @router.get("/{slug}", response_model=ProductResponse)
@@ -97,6 +132,19 @@ async def get_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with slug '{slug}' not found",
         )
+
+    await cache_service.increment_product_views(str(product.id))
+
+    try:
+        await kafka_producer.send(
+            "product.viewed",
+            {
+                "product_id": str(product.id),
+                "slug": slug,
+            },
+        )
+    except Exception:
+        pass
 
     return ProductResponse.model_validate(product)
 
