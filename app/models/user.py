@@ -1,11 +1,23 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, String
+from sqlalchemy import Boolean
+from sqlalchemy import DateTime
+from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import relationship
 
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.cart import Cart
+    from app.models.order import Address
+    from app.models.order import Order
 
 
 class User(Base):
@@ -34,8 +46,8 @@ class User(Base):
         onupdate=datetime.utcnow,
     )
 
-    carts: Mapped[list["Cart"]] = relationship("Cart", back_populates="user", lazy="selectin")
-    orders: Mapped[list["Order"]] = relationship("Order", back_populates="user", lazy="selectin")
-    addresses: Mapped[list["Address"]] = relationship(
+    carts: Mapped[list[Cart]] = relationship("Cart", back_populates="user", lazy="selectin")
+    orders: Mapped[list[Order]] = relationship("Order", back_populates="user", lazy="selectin")
+    addresses: Mapped[list[Address]] = relationship(
         "Address", back_populates="user", lazy="selectin"
     )

@@ -3,10 +3,13 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ConflictError, NotFoundError
-from app.core.security import hash_password, verify_password
+from app.core.exceptions import ConflictError
+from app.core.exceptions import NotFoundError
+from app.core.security import hash_password
+from app.core.security import verify_password
 from app.models.user import User
-from app.schemas.user import UserCreate, UserUpdate
+from app.schemas.user import UserCreate
+from app.schemas.user import UserUpdate
 
 
 class UserService:

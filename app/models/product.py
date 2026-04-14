@@ -2,9 +2,18 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text
-from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Boolean
+from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import Numeric
+from sqlalchemy import String
+from sqlalchemy import Text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import relationship
 
 from app.database import Base
 
@@ -37,15 +46,11 @@ class Category(Base):
         "Category",
         remote_side=[id],
         back_populates="children",
+        lazy="selectin",
     )
     children: Mapped[list["Category"]] = relationship(
         "Category",
         back_populates="parent",
-        lazy="selectin",
-    )
-    products: Mapped[list["Product"]] = relationship(
-        "Product",
-        back_populates="category",
         lazy="selectin",
     )
 
@@ -83,4 +88,7 @@ class Product(Base):
         onupdate=datetime.utcnow,
     )
 
-    category: Mapped["Category | None"] = relationship("Category", back_populates="products")
+    category: Mapped["Category | None"] = relationship(
+        "Category",
+        lazy="selectin",
+    )

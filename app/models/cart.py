@@ -1,12 +1,26 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, UniqueConstraint
+from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import Numeric
+from sqlalchemy import String
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import relationship
 
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.product import Product
+    from app.models.user import User
 
 
 class Cart(Base):
@@ -33,8 +47,8 @@ class Cart(Base):
         onupdate=datetime.utcnow,
     )
 
-    user: Mapped["User | None"] = relationship("User", back_populates="carts")
-    items: Mapped[list["CartItem"]] = relationship(
+    user: Mapped[User | None] = relationship("User", back_populates="carts")
+    items: Mapped[list[CartItem]] = relationship(
         "CartItem",
         back_populates="cart",
         cascade="all, delete-orphan",
@@ -68,5 +82,5 @@ class CartItem(Base):
         default=datetime.utcnow,
     )
 
-    cart: Mapped["Cart"] = relationship("Cart", back_populates="items")
-    product: Mapped["Product"] = relationship("Product")
+    cart: Mapped[Cart] = relationship("Cart", back_populates="items")
+    product: Mapped[Product] = relationship("Product")

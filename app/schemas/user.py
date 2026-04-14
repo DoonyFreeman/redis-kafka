@@ -1,7 +1,9 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel
+from pydantic import EmailStr
+from pydantic import Field
 
 
 class UserBase(BaseModel):

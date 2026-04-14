@@ -1,12 +1,28 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text
-from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Boolean
+from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import Numeric
+from sqlalchemy import String
+from sqlalchemy import Text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import relationship
 
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.product import Product
+    from app.models.user import User
 
 
 class Order(Base):
@@ -44,8 +60,8 @@ class Order(Base):
         onupdate=datetime.utcnow,
     )
 
-    user: Mapped["User | None"] = relationship("User", back_populates="orders")
-    items: Mapped[list["OrderItem"]] = relationship(
+    user: Mapped[User | None] = relationship("User", back_populates="orders")
+    items: Mapped[list[OrderItem]] = relationship(
         "OrderItem",
         back_populates="order",
         cascade="all, delete-orphan",
@@ -80,8 +96,8 @@ class OrderItem(Base):
         default=datetime.utcnow,
     )
 
-    order: Mapped["Order"] = relationship("Order", back_populates="items")
-    product: Mapped["Product | None"] = relationship("Product")
+    order: Mapped[Order] = relationship("Order", back_populates="items")
+    product: Mapped[Product | None] = relationship("Product")
 
 
 class Address(Base):
@@ -112,4 +128,4 @@ class Address(Base):
         default=datetime.utcnow,
     )
 
-    user: Mapped["User"] = relationship("User", back_populates="addresses")
+    user: Mapped[User] = relationship("User", back_populates="addresses")

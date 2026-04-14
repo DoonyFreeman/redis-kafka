@@ -1,21 +1,24 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter
+from fastapi import Depends
+from fastapi import HTTPException
+from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_active_user
 from app.config import get_settings
 from app.core.kafka import kafka_producer
-from app.core.security import (
-    add_to_blacklist,
-    create_access_token,
-    create_refresh_token,
-    decode_token,
-)
+from app.core.security import create_access_token
+from app.core.security import create_refresh_token
+from app.core.security import decode_token
 from app.database import get_db
 from app.models.user import User
-from app.schemas.auth import LoginRequest, RefreshRequest, Token
-from app.schemas.user import UserCreate, UserResponse
+from app.schemas.auth import LoginRequest
+from app.schemas.auth import RefreshRequest
+from app.schemas.auth import Token
+from app.schemas.user import UserCreate
+from app.schemas.user import UserResponse
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -26,7 +29,7 @@ settings = get_settings()
 async def register(
     data: UserCreate,
     db: AsyncSession = Depends(get_db),
-) -> User:
+) -> UserResponse:
     service = UserService(db)
     user = await service.create(data)
 

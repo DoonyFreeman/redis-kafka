@@ -1,11 +1,15 @@
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import Depends
+from fastapi import HTTPException
+from fastapi import status
+from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import decode_token, is_blacklisted
+from app.core.security import decode_token
+from app.core.security import is_blacklisted
 from app.database import get_db
 from app.models.user import User
 

@@ -1,16 +1,17 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter
+from fastapi import Depends
+from fastapi import Query
+from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import require_admin
 from app.database import get_db
-from app.schemas.category import (
-    CategoryCreate,
-    CategoryResponse,
-    CategoryUpdate,
-)
+from app.schemas.category import CategoryCreate
+from app.schemas.category import CategoryResponse
+from app.schemas.category import CategoryUpdate
 from app.services import category_service
 
 router = APIRouter(prefix="/categories", tags=["categories"])

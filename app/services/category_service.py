@@ -1,11 +1,12 @@
 import uuid
-from typing import Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.product import Category
-from app.schemas.category import CategoryCreate, CategoryUpdate
+from app.schemas.category import CategoryCreate
+from app.schemas.category import CategoryUpdate
 
 
 async def get_categories(
@@ -16,7 +17,7 @@ async def get_categories(
 ) -> Sequence[Category]:
     stmt = select(Category).order_by(Category.name)
     if not include_inactive:
-        stmt = stmt.where(Category.is_active == True)
+        stmt = stmt.where(Category.is_active)
     stmt = stmt.offset(skip).limit(limit)
     result = await db.execute(stmt)
     return result.scalars().all()
@@ -40,7 +41,8 @@ async def get_category_by_slug_or_404(
 ) -> Category:
     category = await get_category_by_slug(db, slug)
     if not category:
-        from fastapi import HTTPException, status
+        from fastapi import HTTPException
+        from fastapi import status
 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -89,12 +91,12 @@ async def delete_category(
 
 async def get_category_tree(
     db: AsyncSession,
-) -> list[Category]:
+) -> Sequence[Category]:
     stmt = (
         select(Category)
         .where(
-            Category.parent_id == None,
-            Category.is_active == True,
+            Category.parent_id == None,  # noqa: E711
+            Category.is_active == True,  # noqa: E712
         )
         .order_by(Category.name)
     )

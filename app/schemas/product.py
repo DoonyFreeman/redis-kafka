@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime
-from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel
+from pydantic import ConfigDict
+from pydantic import field_validator
 
 
 class ProductBase(BaseModel):

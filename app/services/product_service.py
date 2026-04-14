@@ -1,12 +1,15 @@
 import uuid
+from collections.abc import Sequence
 from decimal import Decimal
-from typing import Sequence
 
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_
+from sqlalchemy import func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.product import Product, Category
-from app.schemas.product import ProductCreate, ProductUpdate
+from app.models.product import Product
+from app.schemas.product import ProductCreate
+from app.schemas.product import ProductUpdate
 
 
 async def get_products(
@@ -63,7 +66,8 @@ async def get_product_by_slug_or_404(
 ) -> Product:
     product = await get_product_by_slug(db, slug)
     if not product:
-        from fastapi import HTTPException, status
+        from fastapi import HTTPException
+        from fastapi import status
 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -79,7 +83,7 @@ async def get_trending_products(
     stmt = (
         select(Product)
         .where(
-            Product.is_active == True,
+            Product.is_active,
             Product.stock_quantity > 0,
         )
         .order_by(Product.created_at.desc())
@@ -146,7 +150,7 @@ async def get_products_by_category(
         select(Product)
         .where(
             Product.category_id == category_id,
-            Product.is_active == True,
+            Product.is_active,
         )
         .order_by(Product.created_at.desc())
         .offset(skip)
@@ -157,6 +161,6 @@ async def get_products_by_category(
 
 
 async def get_active_products_count(db: AsyncSession) -> int:
-    stmt = select(func.count()).select_from(Product).where(Product.is_active == True)
+    stmt = select(func.count()).select_from(Product).where(Product.is_active)
     result = await db.execute(stmt)
     return result.scalar() or 0

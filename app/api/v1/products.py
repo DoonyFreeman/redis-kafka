@@ -1,20 +1,20 @@
 import uuid
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter
+from fastapi import Depends
+from fastapi import Query
+from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import require_admin
 from app.database import get_db
-from app.schemas.product import (
-    PaginatedProductsResponse,
-    ProductCreate,
-    ProductDetailResponse,
-    ProductInListResponse,
-    ProductResponse,
-    ProductUpdate,
-    TrendingProductResponse,
-)
+from app.schemas.product import PaginatedProductsResponse
+from app.schemas.product import ProductCreate
+from app.schemas.product import ProductInListResponse
+from app.schemas.product import ProductResponse
+from app.schemas.product import ProductUpdate
+from app.schemas.product import TrendingProductResponse
 from app.services import product_service
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -28,9 +28,9 @@ async def list_products(
     db: DbDep,
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    category_id: Optional[uuid.UUID] = Query(None),
-    min_price: Optional[float] = Query(None, ge=0),
-    max_price: Optional[float] = Query(None, ge=0),
+    category_id: uuid.UUID | None = Query(None),
+    min_price: float | None = Query(None, ge=0),
+    max_price: float | None = Query(None, ge=0),
 ) -> PaginatedProductsResponse:
     products, total = await product_service.get_products(
         db,
@@ -84,11 +84,11 @@ async def get_trending_products(
     ]
 
 
-@router.get("/{slug}", response_model=ProductDetailResponse)
+@router.get("/{slug}", response_model=ProductResponse)
 async def get_product(
     slug: str,
     db: DbDep,
-) -> ProductDetailResponse:
+) -> ProductResponse:
     product = await product_service.get_product_by_slug(db, slug)
     if not product:
         from fastapi import HTTPException
@@ -98,26 +98,7 @@ async def get_product(
             detail=f"Product with slug '{slug}' not found",
         )
 
-    category_name = None
-    if product.category:
-        category_name = product.category.name
-
-    return ProductDetailResponse(
-        id=product.id,
-        name=product.name,
-        slug=product.slug,
-        description=product.description,
-        price=float(product.price),
-        old_price=float(product.old_price) if product.old_price else None,
-        stock_quantity=product.stock_quantity,
-        category_id=product.category_id,
-        image_url=product.image_url,
-        images=product.images or [],
-        is_active=product.is_active,
-        created_at=product.created_at,
-        updated_at=product.updated_at,
-        category_name=category_name,
-    )
+    return ProductResponse.model_validate(product)
 
 
 @router.post("", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
