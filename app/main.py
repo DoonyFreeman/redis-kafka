@@ -1,6 +1,8 @@
+import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
+from aiokafka.errors import KafkaConnectionError
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,10 +18,24 @@ from app.middleware.rate_limiter import RateLimitMiddleware
 settings = get_settings()
 
 
+async def _start_kafka_with_retry() -> None:
+    max_retries = 30
+    retry_delay = 2
+    for attempt in range(max_retries):
+        try:
+            await kafka_producer.start()
+            return
+        except KafkaConnectionError as e:
+            if attempt < max_retries - 1:
+                await asyncio.sleep(retry_delay)
+            else:
+                raise e
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await redis_client.connect()
-    await kafka_producer.start()
+    await _start_kafka_with_retry()
     yield
     await kafka_producer.stop()
     await redis_client.disconnect()

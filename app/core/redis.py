@@ -56,5 +56,14 @@ class RedisClient:
         result: bool = await self.client.expire(key, seconds)
         return result
 
+    async def scan(
+        self,
+        cursor: int = 0,
+        match: str | None = None,
+        count: int = 100,
+    ) -> tuple[int, list[str]]:
+        result = await self.client.scan(cursor=cursor, match=match, count=count)
+        return result
+
 
 redis_client = RedisClient()

@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MINUTE: int = 60
 
     EMAIL_MODE: str = "console"
+    RESEND_API_KEY: str = ""
+    EMAIL_FROM: str = "onlineshop@example.com"
 
 
 @lru_cache
