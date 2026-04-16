@@ -34,7 +34,10 @@ class ShippingAddress(BaseModel):
 
 
 class OrderCreateRequest(BaseModel):
-    shipping_address: ShippingAddress
+    address_id: uuid.UUID | None = Field(default=None, description="Use saved address")
+    shipping_address: ShippingAddress | None = Field(
+        default=None, description="Or enter new address"
+    )
     payment_method: str = Field(default="card", max_length=50)
     notes: str | None = None
 

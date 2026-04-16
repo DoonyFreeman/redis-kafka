@@ -15,6 +15,7 @@ from app.schemas.order import OrderCreateRequest
 from app.schemas.order import OrderItemResponse
 from app.schemas.order import OrderListResponse
 from app.schemas.order import OrderResponse
+from app.services import address_service
 from app.services import cart_service
 from app.services import order_service
 
@@ -100,6 +101,23 @@ async def create_order(
     db: DbDep,
     user: UserDep,
 ) -> OrderResponse:
+    if not data.address_id and not data.shipping_address:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Either address_id or shipping_address is required",
+        )
+
+    if data.address_id:
+        address = await address_service.get_address_by_id(db, data.address_id, user.id)
+        if not address:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Address not found",
+            )
+        shipping_address = address_service.address_to_shipping_dict(address)
+    else:
+        shipping_address = data.shipping_address.model_dump() if data.shipping_address else {}
+
     cart = await cart_service.get_or_create_cart(db, user.id)
     items = await cart_service.get_cart_items(db, cart.id)
 
@@ -109,10 +127,9 @@ async def create_order(
             detail="Cannot create order with empty cart",
         )
 
-    try:
-        order = await order_service.create_order(db, user.id, cart.id, data)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    order = await order_service.create_order_from_dict(
+        db, user.id, cart.id, shipping_address, data.payment_method, data.notes
+    )
 
     try:
         await kafka_producer.send(

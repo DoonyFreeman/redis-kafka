@@ -11,7 +11,6 @@ from app.models.cart import CartItem
 from app.models.order import Order
 from app.models.order import OrderItem
 from app.models.product import Product
-from app.schemas.order import OrderCreateRequest
 from app.schemas.order import OrderStatus
 from app.schemas.order import PaymentStatus
 
@@ -71,11 +70,13 @@ async def get_cart_items_with_products(
     return [(row[0], row[1]) for row in rows]
 
 
-async def create_order(
+async def create_order_from_dict(
     db: AsyncSession,
     user_id: uuid.UUID,
     cart_id: uuid.UUID,
-    data: OrderCreateRequest,
+    shipping_address: dict,
+    payment_method: str = "card",
+    notes: str | None = None,
 ) -> Order:
     cart_items = await get_cart_items_with_products(db, cart_id)
 
@@ -105,10 +106,10 @@ async def create_order(
         user_id=user_id,
         status=OrderStatus.PENDING.value,
         total_amount=total_amount,
-        shipping_address=data.shipping_address.model_dump(),
-        payment_method=data.payment_method,
+        shipping_address=shipping_address,
+        payment_method=payment_method,
         payment_status=PaymentStatus.PENDING.value,
-        notes=data.notes,
+        notes=notes,
     )
 
     db.add(order)

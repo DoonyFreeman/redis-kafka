@@ -1,3 +1,4 @@
+from app.services import address_service
 from app.services import analytics_service
 from app.services import cache_service
 from app.services import cart_service
@@ -8,6 +9,7 @@ from app.services import product_service
 from app.services import user_service
 
 __all__ = [
+    "address_service",
     "analytics_service",
     "cache_service",
     "cart_service",

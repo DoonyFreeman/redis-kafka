@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.api.v1.addresses import router as addresses_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.cart import router as cart_router
 from app.api.v1.categories import router as categories_router
@@ -15,3 +16,4 @@ router.include_router(categories_router)
 router.include_router(products_router)
 router.include_router(cart_router)
 router.include_router(orders_router)
+router.include_router(addresses_router)
