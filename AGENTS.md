@@ -413,8 +413,18 @@ CREATE TABLE addresses (
 - [ ] Выбор адреса при оформлении заказа
 
 ### Phase 8: Testing
-- [x] Unit тесты для key services
+- [x] Unit тесты для key services (58 tests)
 - [ ] Интеграционные тесты для API endpoints
+
+#### Phase 8.2: Integration Tests (Future)
+- [ ] API тесты для auth endpoints (/register, /login, /logout, /refresh)
+- [ ] API тесты для products (/, /{slug}, /trending)
+- [ ] API тесты для cart (/items, /items/{id})
+- [ ] API тесты для orders (/, /{order_number}, /{order_number}/pay)
+- [ ] Fixtures для test client (httpx async)
+- [ ] Database fixtures для тестов (PostgreSQL in Docker)
+- [ ] Authentication fixtures (JWT tokens)
+- [ ] Test isolation и cleanup
 
 ### Phase 9: CI/CD Pipeline (Future)
 - [ ] GitHub Actions workflow
