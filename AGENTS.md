@@ -413,8 +413,18 @@ CREATE TABLE addresses (
 - [ ] Выбор адреса при оформлении заказа
 
 ### Phase 8: Testing
-- [ ] Unit тесты для key services
+- [x] Unit тесты для key services
 - [ ] Интеграционные тесты для API endpoints
+
+### Phase 9: CI/CD Pipeline (Future)
+- [ ] GitHub Actions workflow
+- [ ] Ruff lint check
+- [ ] MyPy type check
+- [ ] PostgreSQL service container
+- [ ] Redis service container
+- [ ] Kafka service container
+- [ ] pytest с coverage
+- [ ] Codecov integration
 
 ---
 
