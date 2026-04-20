@@ -24,7 +24,8 @@ class TestProductServiceImports:
         assert Product is not None
 
     def test_product_schemas_importable(self):
-        from app.schemas.product import ProductCreate, ProductUpdate
+        from app.schemas.product import ProductCreate
+        from app.schemas.product import ProductUpdate
 
         assert ProductCreate is not None
         assert ProductUpdate is not None
@@ -67,6 +68,7 @@ class TestProductSchemaValidation:
 
     def test_product_create_with_category(self):
         import uuid
+
         from app.schemas.product import ProductCreate
 
         category_id = uuid.uuid4()
@@ -120,6 +122,7 @@ class TestProductSlugValidation:
 class TestProductPriceValidation:
     def test_price_must_be_positive(self):
         from pydantic import ValidationError
+
         from app.schemas.product import ProductCreate
 
         with pytest.raises(ValidationError):
@@ -132,6 +135,7 @@ class TestProductPriceValidation:
 
     def test_price_zero_raises_error(self):
         from pydantic import ValidationError
+
         from app.schemas.product import ProductCreate
 
         with pytest.raises(ValidationError):
@@ -146,6 +150,7 @@ class TestProductPriceValidation:
 class TestProductStockValidation:
     def test_stock_quantity_must_be_non_negative(self):
         from pydantic import ValidationError
+
         from app.schemas.product import ProductCreate
 
         with pytest.raises(ValidationError):

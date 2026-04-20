@@ -1,15 +1,17 @@
 import os
 import uuid
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pytest
 import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from httpx import ASGITransport
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine
 
-from app.main import app
 from app.database import Base
-
+from app.main import app
 
 TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5433/test_online_shop"
@@ -163,8 +165,9 @@ async def test_category(db_session: async_sessionmaker, admin_token: str) -> dic
 
 @pytest_asyncio.fixture(scope="function")
 async def test_product(db_session: async_sessionmaker, test_category: dict) -> dict:
-    from app.models.product import Product
     from decimal import Decimal
+
+    from app.models.product import Product
 
     product_id = uuid.uuid4()
     product = Product(

@@ -1,4 +1,3 @@
-import pytest
 
 
 class TestCartServiceImports:
@@ -20,7 +19,8 @@ class TestCartServiceImports:
         assert hasattr(cart_service, "get_cart_with_items")
 
     def test_cart_model_importable(self):
-        from app.models.cart import Cart, CartItem
+        from app.models.cart import Cart
+        from app.models.cart import CartItem
 
         assert Cart is not None
         assert CartItem is not None
@@ -28,8 +28,9 @@ class TestCartServiceImports:
 
 class TestCartSchemaValidation:
     def test_cart_item_add_schema(self):
-        from app.schemas.cart import CartItemAddRequest
         import uuid
+
+        from app.schemas.cart import CartItemAddRequest
 
         item = CartItemAddRequest(product_id=uuid.uuid4(), quantity=2)
         assert item.quantity == 2

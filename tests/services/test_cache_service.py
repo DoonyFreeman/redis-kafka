@@ -1,5 +1,6 @@
 import uuid
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
+from unittest.mock import patch
 
 import pytest
 
@@ -154,4 +155,3 @@ class TestCacheService:
         assert count == 0
 
 
-from unittest.mock import patch

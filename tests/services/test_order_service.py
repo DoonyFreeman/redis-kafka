@@ -1,4 +1,3 @@
-import pytest
 
 
 class TestOrderServiceImports:
@@ -19,13 +18,15 @@ class TestOrderServiceImports:
         assert hasattr(order_service, "generate_order_number")
 
     def test_order_model_importable(self):
-        from app.models.order import Order, OrderItem
+        from app.models.order import Order
+        from app.models.order import OrderItem
 
         assert Order is not None
         assert OrderItem is not None
 
     def test_order_schemas_importable(self):
-        from app.schemas.order import OrderStatus, PaymentStatus
+        from app.schemas.order import OrderStatus
+        from app.schemas.order import PaymentStatus
 
         assert OrderStatus is not None
         assert PaymentStatus is not None
@@ -109,8 +110,9 @@ class TestOrderCancellation:
 class TestMockPayment:
     def test_process_payment_returns_bool(self):
         import asyncio
-        from app.services.order_service import process_payment
         import uuid
+
+        from app.services.order_service import process_payment
 
         result = asyncio.get_event_loop().run_until_complete(process_payment(uuid.uuid4()))
         assert isinstance(result, bool)

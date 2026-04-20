@@ -426,15 +426,15 @@ CREATE TABLE addresses (
 - [x] Authentication fixtures (JWT tokens)
 - [x] docker-compose.test.yaml
 
-### Phase 9: CI/CD Pipeline (Future)
-- [ ] GitHub Actions workflow
-- [ ] Ruff lint check
-- [ ] MyPy type check
-- [ ] PostgreSQL service container
-- [ ] Redis service container
-- [ ] Kafka service container
-- [ ] pytest с coverage
-- [ ] Codecov integration
+### Phase 9: CI/CD Pipeline (Done)
+- [x] GitHub Actions workflow (.github/workflows/ci.yml)
+- [x] Ruff lint check
+- [x] MyPy type check
+- [x] PostgreSQL service container (в workflow)
+- [x] Redis service container (в workflow)
+- [ ] Kafka service container (тесты не используют)
+- [x] pytest с coverage
+- [ ] Codecov integration (требует CODECOV_TOKEN)
 
 ---
 

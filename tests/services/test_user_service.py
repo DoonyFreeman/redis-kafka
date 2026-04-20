@@ -1,15 +1,16 @@
-import uuid
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.core.exceptions import ConflictError, NotFoundError
-from app.schemas.user import UserCreate, UserUpdate
+from app.core.exceptions import ConflictError
+from app.core.exceptions import NotFoundError
+from app.schemas.user import UserCreate
+from app.schemas.user import UserUpdate
 
 
 class TestUserServiceImports:
     def test_exceptions_importable(self):
-        from app.core.exceptions import ConflictError, NotFoundError
+        from app.core.exceptions import ConflictError
+        from app.core.exceptions import NotFoundError
 
         assert ConflictError is not None
         assert NotFoundError is not None
@@ -20,13 +21,14 @@ class TestUserServiceImports:
         assert UserService is not None
 
     def test_user_schemas_importable(self):
-        from app.schemas.user import UserCreate, UserUpdate
+        from app.schemas.user import UserCreate
 
         assert UserCreate is not None
         assert UserUpdate is not None
 
     def test_password_hashing(self):
-        from app.core.security import hash_password, verify_password
+        from app.core.security import hash_password
+        from app.core.security import verify_password
 
         password = "testpassword123"
         hashed = hash_password(password)
@@ -36,6 +38,7 @@ class TestUserServiceImports:
 
     def test_token_creation(self):
         from datetime import timedelta
+
         from app.core.security import create_access_token
 
         token = create_access_token("test@example.com", expires_delta=timedelta(minutes=60))
