@@ -74,6 +74,21 @@ services:
       - redis
     command: python -m workers.run_consumer
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: docker/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://app:8000
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://app:8000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - app
+
 volumes:
   postgres_data:
   redis_data:
