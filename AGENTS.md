@@ -414,17 +414,17 @@ CREATE TABLE addresses (
 
 ### Phase 8: Testing
 - [x] Unit тесты для key services (58 tests)
-- [ ] Интеграционные тесты для API endpoints
+- [x] Интеграционные тесты для API endpoints (53 tests, requires Docker)
 
-#### Phase 8.2: Integration Tests (Future)
-- [ ] API тесты для auth endpoints (/register, /login, /logout, /refresh)
-- [ ] API тесты для products (/, /{slug}, /trending)
-- [ ] API тесты для cart (/items, /items/{id})
-- [ ] API тесты для orders (/, /{order_number}, /{order_number}/pay)
-- [ ] Fixtures для test client (httpx async)
-- [ ] Database fixtures для тестов (PostgreSQL in Docker)
-- [ ] Authentication fixtures (JWT tokens)
-- [ ] Test isolation и cleanup
+#### Phase 8.2: Integration Tests (Done)
+- [x] API тесты для auth endpoints (/register, /login, /logout, /refresh)
+- [x] API тесты для products (/, /{slug}, /trending)
+- [x] API тесты для cart (/items, /items/{id})
+- [x] API тесты для orders (/, /{order_number}, /{order_number}/pay)
+- [x] Fixtures для test client (httpx async)
+- [x] Database fixtures для тестов (PostgreSQL in Docker)
+- [x] Authentication fixtures (JWT tokens)
+- [x] docker-compose.test.yaml
 
 ### Phase 9: CI/CD Pipeline (Future)
 - [ ] GitHub Actions workflow
